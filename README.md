@@ -1,4 +1,4 @@
-ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.0.2-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/com.github.musichin.ktupnp/images/download.svg) ](https://bintray.com/musichin/maven/com.github.musichin.ktupnp/_latestVersion)
+ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.0.2-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/ktUPnP/images/download.svg) ](https://bintray.com/musichin/maven/ktUPnP/_latestVersion)
 =========
 
 License
