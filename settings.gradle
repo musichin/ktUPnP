@@ -1,1 +1,1 @@
-include ':discovery'
+include ':ktupnp-discovery'
