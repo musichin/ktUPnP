@@ -53,7 +53,7 @@ subprojects {
         publications = ['mavenJava']
         pkg {
             repo = 'maven'
-            name = 'com.github.musichin.ktupnp'
+            name = 'ktUPnP'
             licenses = ['Apache-2.0']
             vcsUrl = 'https://github.com/musichin/ktUPnP.git'
         }
