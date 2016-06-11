@@ -1,4 +1,4 @@
-ktUPnP
+ktUPnP [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP)
 =========
 
 License
