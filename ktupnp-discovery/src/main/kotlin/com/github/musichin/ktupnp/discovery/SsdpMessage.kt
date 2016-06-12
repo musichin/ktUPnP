@@ -2,9 +2,9 @@ package com.github.musichin.ktupnp.discovery;
 
 import java.util.*
 
-class Message private constructor(val type: String, val keyValues: Map<String, String>) {
+class SsdpMessage private constructor(val type: String, val keyValues: Map<String, String>) {
     class Builder() {
-        constructor(message: Message) : this() {
+        constructor(message: SsdpMessage) : this() {
             type = message.type
             keyValues.putAll(message.keyValues)
         }
@@ -19,18 +19,18 @@ class Message private constructor(val type: String, val keyValues: Map<String, S
 
         fun default(type: String): Builder {
             return when (type) {
-                SEARCH -> search().man("\"ssdp:discover\"").mx(5)
-                NOTIFY -> notify().cacheControl("max-age=1800")
-                OK -> ok().cacheControl("max-age=1800")
+                SEARCH_TYPE -> search().man("\"ssdp:discover\"").mx(5)
+                NOTIFY_TYPE -> notify().cacheControl("max-age=1800")
+                OK_TYPE -> ok().cacheControl("max-age=1800")
                 else -> throw IllegalArgumentException("Unsupported type $type")
             }
         }
 
-        fun notify() = startingLine(NOTIFY)
+        fun notify() = startingLine(NOTIFY_TYPE)
 
-        fun ok() = startingLine(OK)
+        fun ok() = startingLine(OK_TYPE)
 
-        fun search() = startingLine(SEARCH)
+        fun search() = startingLine(SEARCH_TYPE)
 
         fun st(st: String) = set(ST, st)
 
@@ -40,7 +40,7 @@ class Message private constructor(val type: String, val keyValues: Map<String, S
 
         fun cacheControl(man: String) = set(CACHE_CONTROL, man)
 
-        fun build() = Message(type!!, keyValues)
+        fun build() = SsdpMessage(type!!, keyValues)
 
         fun set(key: String, value: Any): Builder {
             keyValues.put(key, value.toString())
@@ -50,9 +50,9 @@ class Message private constructor(val type: String, val keyValues: Map<String, S
 
     companion object {
         const val HTTP = "HTTP/1.1"
-        const val OK = "${HTTP} 200 OK"
-        const val SEARCH = "M-SEARCH * ${HTTP}"
-        const val NOTIFY = "NOTIFY * ${HTTP}"
+        const val OK_TYPE = "${HTTP} 200 OK"
+        const val SEARCH_TYPE = "M-SEARCH * ${HTTP}"
+        const val NOTIFY_TYPE = "NOTIFY * ${HTTP}"
         const val ST = "ST"
         const val MX = "MX"
         const val MAN = "MAN"
@@ -66,11 +66,11 @@ class Message private constructor(val type: String, val keyValues: Map<String, S
         private const val COLON = ":"
         private const val COLON_WITH_SPACE = "${COLON} "
 
-        fun fromBytes(bytes: ByteArray): Message {
+        fun fromBytes(bytes: ByteArray): SsdpMessage {
             return fromBytes(bytes, 0, bytes.size)
         }
 
-        fun fromBytes(bytes: ByteArray, offset: Int, length: Int): Message {
+        fun fromBytes(bytes: ByteArray, offset: Int, length: Int): SsdpMessage {
             val builder = Builder()
             val str = String(bytes, offset, length)
             val strArray = str.split(LINE_BREAK)
@@ -135,7 +135,7 @@ class Message private constructor(val type: String, val keyValues: Map<String, S
     }
 
     override fun equals(other: Any?): Boolean {
-        if (other is Message) {
+        if (other is SsdpMessage) {
             return keyValues == other.keyValues && type == other.type
         }
         return super.equals(other)

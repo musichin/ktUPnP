@@ -8,7 +8,7 @@ import java.io.IOException
 import java.net.*
 import java.util.concurrent.atomic.AtomicBoolean
 
-class Ssdp {
+class Ssdp private constructor() {
     companion object {
         const val PORT = 1900
         const val IPv4 = "239.255.255.250"
@@ -16,8 +16,16 @@ class Ssdp {
 
         internal const val BUFFER_SIZE = 1024
 
-        fun search(message: Message): Observable<Message> {
-            val subject = PublishSubject.create<Message>()
+        /**
+         * Sends a search request and returns responding messages.
+         * This method has no timeout and should be unsubscribed after a timeout.
+         */
+        fun search(message: SsdpMessage): Observable<SsdpMessage> {
+            if (message.type != SsdpMessage.SEARCH_TYPE) {
+                throw IllegalArgumentException("Type ${message.type} is not supported for search.")
+            }
+
+            val subject = PublishSubject.create<SsdpMessage>()
             val thread = SearchThread(message, subject)
 
             return subject.doOnSubscribe {
@@ -27,30 +35,53 @@ class Ssdp {
             }).share()
         }
 
-        fun publish(message: Message): Observable<Message> {
+        fun publish(message: SsdpMessage): Observable<SsdpMessage> {
             throw NotImplementedError("Not implemented yet")
         }
 
-        fun notifications(): Observable<Message> {
-            throw NotImplementedError("Not implemented yet")
+        /**
+         * Listens for all notification messages.
+         */
+        fun notifications(): Observable<SsdpMessage> {
+            val subject = PublishSubject.create<SsdpMessage>()
+            val thread = ReceiveThread(subject)
 
-//            val subject = ReplaySubject.create<Message>()
-//            val thread = ReceiveThread(subject)
-//
-//            return subject.doOnSubscribe {
-//                thread.start()
-//            }.doOnUnsubscribe({
-//                thread.cancel()
-//            }).share()
+            return subject.doOnSubscribe {
+                thread.start()
+            }.doOnUnsubscribe({
+                thread.cancel()
+            }).share()
         }
     }
 
-    private class ReceiveThread(private val subject: Subject<Message, Message>,
-                                private val socket: MulticastSocket = MulticastSocket(PORT)) : Thread() {
-        private val canceled = AtomicBoolean(false)
-        private val finished = AtomicBoolean(false)
+    private open class SocketThread(val socket: MulticastSocket = MulticastSocket()) : Thread() {
+        protected val canceled = AtomicBoolean(false)
+        protected val finished = AtomicBoolean(false)
 
-        private fun DatagramPacket.message() = Message.fromBytes(this.data, this.offset, this.length)
+        protected fun DatagramPacket.message() = SsdpMessage.fromBytes(this.data, this.offset, this.length)
+
+
+        protected fun receive(socket: DatagramSocket, action: (SsdpMessage) -> Unit) {
+            val dp = DatagramPacket(ByteArray(BUFFER_SIZE), BUFFER_SIZE);
+
+            try {
+                while (!socket.isClosed && !interrupted()) {
+                    socket.receive(dp)
+                    action(dp.message())
+                }
+            } catch(e: SocketTimeoutException) {
+                // socket normally timed out
+            } catch(e: IOException) {
+                if (!canceled.get()) {
+                    throw e
+                }
+            }
+        }
+    }
+
+    private class ReceiveThread(
+            private val subject: Subject<SsdpMessage, SsdpMessage>
+    ) : SocketThread(MulticastSocket(PORT)) {
         override fun run() {
             try {
                 sendAndReceive()
@@ -68,22 +99,10 @@ class Ssdp {
             socket.joinGroup(InetAddress.getByName(IPv4))
             socket.joinGroup(InetAddress.getByName(IPv6))
 
-            val responseDatagram = DatagramPacket(ByteArray(BUFFER_SIZE), BUFFER_SIZE);
-
             // communicate
-            try {
-                while (!socket.isClosed && !interrupted()) {
-                    socket.receive(responseDatagram)
-                    val responseMessage = responseDatagram.message()
-                    if (responseMessage.type == Message.NOTIFY) {
-                        subject.onNext(responseMessage)
-                    }
-                }
-            } catch(e: SocketTimeoutException) {
-                // socket normally timed out
-            } catch(e: IOException) {
-                if (!canceled.get()) {
-                    throw e
+            receive(socket) {
+                if (it.type == SsdpMessage.NOTIFY_TYPE) {
+                    subject.onNext(it)
                 }
             }
         }
@@ -102,14 +121,9 @@ class Ssdp {
     }
 
     private class SearchThread(
-            val message: Message,
-            private val subject: Subject<Message, Message>,
-            private val socket: MulticastSocket = MulticastSocket()) : Thread() {
+            val message: SsdpMessage,
+            private val subject: Subject<SsdpMessage, SsdpMessage>) : SocketThread() {
 
-        private val canceled = AtomicBoolean(false)
-        private val finished = AtomicBoolean(false)
-
-        private fun DatagramPacket.message() = Message.fromBytes(this.data, this.offset, this.length)
         override fun run() {
             handleException {
                 receive()
@@ -120,21 +134,17 @@ class Ssdp {
 
         private fun send() {
             handleException {
-                val addressV4 = InetAddress.getByName(IPv4)
-                val addressV6 = InetAddress.getByName(IPv6)
-
-                socket.joinGroup(addressV4)
-                socket.joinGroup(addressV6)
-
-                val messageV4 = message.builder().set("HOST", "$IPv4:$PORT").build().bytes()
-                val messageV6 = message.builder().set("HOST", "$IPv6:$PORT").build().bytes()
-
-                val requestDatagramV4 = DatagramPacket(messageV4, messageV4.size, addressV4, PORT)
-                val requestDatagramV6 = DatagramPacket(messageV6, messageV6.size, addressV6, PORT)
-
-                socket.send(requestDatagramV4)
-                socket.send(requestDatagramV6)
+                send(IPv4)
+                send(IPv6)
             }
+        }
+
+        private fun send(host: String) {
+            val address = InetAddress.getByName(host)
+            val message = message.builder().set("HOST", "$host:$PORT").build().bytes()
+            val dp = DatagramPacket(message, message.size, address, PORT)
+
+            socket.send(dp)
         }
 
         private fun handleException(action: () -> Unit) {
@@ -147,21 +157,9 @@ class Ssdp {
         }
 
         private fun receive() {
-            val responseDatagram = DatagramPacket(ByteArray(BUFFER_SIZE), BUFFER_SIZE);
-            // communicate
-            try {
-                while (!socket.isClosed && !interrupted()) {
-                    socket.receive(responseDatagram)
-                    val responseMessage = responseDatagram.message()
-                    if (responseMessage.type == Message.OK && responseMessage.st == message.st) {
-                        subject.onNext(responseMessage)
-                    }
-                }
-            } catch(e: SocketTimeoutException) {
-                // socket normally timed out
-            } catch(e: IOException) {
-                if (!canceled.get()) {
-                    throw e
+            receive(socket) {
+                if (it.type == SsdpMessage.OK_TYPE && it.st == message.st) {
+                    subject.onNext(it)
                 }
             }
         }
