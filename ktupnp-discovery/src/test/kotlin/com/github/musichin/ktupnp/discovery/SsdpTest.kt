@@ -24,13 +24,6 @@ class SsdpTest {
     }
 
     @Test
-    @Ignore
-    fun publish() {
-        val subscriber = TestSubscriber<SsdpMessage>();
-        Ssdp.publish(MESSAGE).subscribe(subscriber)
-    }
-
-    @Test
     fun search() {
         val subscriber = TestSubscriber<SsdpMessage>();
         Ssdp.search(MESSAGE).subscribe(subscriber)
