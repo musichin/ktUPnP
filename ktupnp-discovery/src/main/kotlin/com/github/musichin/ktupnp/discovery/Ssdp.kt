@@ -35,10 +35,6 @@ class Ssdp private constructor() {
             }).share()
         }
 
-        fun publish(message: SsdpMessage): Observable<SsdpMessage> {
-            throw NotImplementedError("Not implemented yet")
-        }
-
         /**
          * Listens for all notification messages.
          */

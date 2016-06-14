@@ -1,8 +1,35 @@
-ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.0.2-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/ktUPnP/images/download.svg) ](https://bintray.com/musichin/maven/ktUPnP/_latestVersion)
-=========
+# ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.0.2-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/ktUPnP/images/download.svg) ](https://bintray.com/musichin/maven/ktUPnP/_latestVersion)
 
-License
--------
+
+## Discovery
+
+### Search
+```kotlin
+val message = SsdpMessage.Builder().default(SsdpMessage.SEARCH_TYPE).st("upnp:rootdevice").build()
+Ssdp.search(message).subscribe {
+  println(it)
+}
+```
+
+### Notifications
+```kotlin
+Ssdp.notifications().filter { it.st == "upnp:rootdevice" }.subscribe {
+  println(it)
+}
+```
+
+### Binaries
+```groovy
+repositories {
+    maven { url 'https://bintray.com/musichin/maven' }
+}
+
+dependencies {
+    compile 'com.github.musichin.ktupnp:ktupnp-discovery:x.y.z'
+}
+```
+
+## License
 
     Copyright (C) 2016 Anton Musichin
 

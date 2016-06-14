@@ -2,7 +2,7 @@ package com.github.musichin.ktupnp.discovery;
 
 import java.util.*
 
-class SsdpMessage private constructor(val type: String, val keyValues: Map<String, String>) {
+data class SsdpMessage private constructor(val type: String, val keyValues: Map<String, String>) {
     class Builder() {
         constructor(message: SsdpMessage) : this() {
             type = message.type
@@ -12,7 +12,7 @@ class SsdpMessage private constructor(val type: String, val keyValues: Map<Strin
         var type: String? = null
         var keyValues: HashMap<String, String> = HashMap()
 
-        fun startingLine(startingLine: String): Builder {
+        fun type(startingLine: String): Builder {
             this.type = startingLine
             return this
         }
@@ -26,11 +26,11 @@ class SsdpMessage private constructor(val type: String, val keyValues: Map<Strin
             }
         }
 
-        fun notify() = startingLine(NOTIFY_TYPE)
+        fun notify() = type(NOTIFY_TYPE)
 
-        fun ok() = startingLine(OK_TYPE)
+        fun ok() = type(OK_TYPE)
 
-        fun search() = startingLine(SEARCH_TYPE)
+        fun search() = type(SEARCH_TYPE)
 
         fun st(st: String) = set(ST, st)
 
@@ -64,7 +64,7 @@ class SsdpMessage private constructor(val type: String, val keyValues: Map<Strin
 
         private const val LINE_BREAK = "\r\n"
         private const val COLON = ":"
-        private const val COLON_WITH_SPACE = "${COLON} "
+        private const val COLON_WITH_SPACE = "$COLON "
 
         fun fromBytes(bytes: ByteArray): SsdpMessage {
             return fromBytes(bytes, 0, bytes.size)
@@ -113,7 +113,6 @@ class SsdpMessage private constructor(val type: String, val keyValues: Map<Strin
 
     val st = get(ST)
 
-
     fun builder(): Builder {
         return Builder(this)
     }
@@ -132,19 +131,5 @@ class SsdpMessage private constructor(val type: String, val keyValues: Map<Strin
         sb.append(LINE_BREAK)
 
         return sb.toString()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (other is SsdpMessage) {
-            return keyValues == other.keyValues && type == other.type
-        }
-        return super.equals(other)
-    }
-
-    override fun hashCode(): Int {
-        var h = 31
-        h = h * 17 + type.hashCode()
-        h = h * 17 + keyValues.hashCode()
-        return h
     }
 }
