@@ -11,7 +11,6 @@ import org.junit.Ignore
 class SsdpTest {
     companion object {
         val ST_ROOTDEVICE = "upnp:rootdevice"
-        val MESSAGE = SsdpMessage.Builder().default(SsdpMessage.SEARCH_TYPE).st(ST_ROOTDEVICE).build()
     }
 
     @Test
@@ -26,7 +25,7 @@ class SsdpTest {
     @Test
     fun search() {
         val subscriber = TestSubscriber<SsdpMessage>();
-        Ssdp.search(MESSAGE).subscribe(subscriber)
+        Ssdp.search(ST_ROOTDEVICE).subscribe(subscriber)
 
         subscriber.awaitTerminalEvent(5, TimeUnit.SECONDS)
         subscriber.assertNoErrors()

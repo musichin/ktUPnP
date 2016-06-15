@@ -1,20 +1,22 @@
 # ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.0.2-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/ktUPnP/images/download.svg) ](https://bintray.com/musichin/maven/ktUPnP/_latestVersion)
 
-
 ## Discovery
 
 ### Search
 ```kotlin
-val message = SsdpMessage.Builder().default(SsdpMessage.SEARCH_TYPE).st("upnp:rootdevice").build()
-Ssdp.search(message).subscribe {
-  println(it)
+Ssdp.search("upnp:rootdevice").subscribe {
+  println(it.location)
+  // "http://192.168.0.1:9561/description.xml"
+  println(it.server)
+  // "Linux/2.6.32.5"
 }
 ```
 
 ### Notifications
 ```kotlin
 Ssdp.notifications().filter { it.st == "upnp:rootdevice" }.subscribe {
-  println(it)
+  println(it.nt)
+  // "urn:schemas-upnp-org:device:InternetGatewayDevice:1"
 }
 ```
 

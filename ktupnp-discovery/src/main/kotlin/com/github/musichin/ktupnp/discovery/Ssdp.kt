@@ -17,6 +17,11 @@ class Ssdp private constructor() {
         internal const val BUFFER_SIZE = 1024
 
         /**
+         * Performs search for device with given ST and other default parameter values
+         */
+        fun search(st: String) = search(SsdpMessage.Builder().default(SsdpMessage.SEARCH_TYPE).st(st).build())
+
+        /**
          * Sends a search request and returns responding messages.
          * This method has no timeout and should be unsubscribed after a timeout.
          */
