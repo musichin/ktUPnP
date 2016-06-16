@@ -1,4 +1,5 @@
 apply plugin: 'kotlin'
+apply plugin: 'com.novoda.bintray-release'
 
 buildscript {
     repositories {
@@ -13,9 +14,19 @@ buildscript {
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$parent.ext.kotlin_version"
     compile 'io.reactivex:rxjava:1.1.5'
-   // compile 'io.reactivex:rxkotlin:0.55.0'
 
     testCompile 'junit:junit:4.12'
     testCompile "org.mockito:mockito-core:1.10.19"
     testCompile 'org.easytesting:fest-assert-core:2.0M10'
+}
+
+publish {
+    artifactId = project.name
+    uploadName = parent.ext.publish_name
+    autoPublish = true
+    desc = parent.ext.publish_desc
+    groupId = parent.ext.publish_groupId
+    licences = parent.ext.publish_licences
+    publishVersion = parent.ext.publish_version
+    website = parent.ext.publish_website
 }
