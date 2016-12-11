@@ -6,14 +6,14 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$parent.ext.kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$parent.kotlin_version"
     }
 }
 
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$parent.ext.kotlin_version"
-    compile 'io.reactivex:rxjava:1.1.5'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$parent.kotlin_version"
+    compile 'io.reactivex:rxjava:1.2.3'
 
     testCompile 'junit:junit:4.12'
     testCompile "org.mockito:mockito-core:1.10.19"
@@ -22,11 +22,11 @@ dependencies {
 
 publish {
     artifactId = project.name
-    uploadName = parent.ext.publish_name
+    uploadName = parent.publish_name
     autoPublish = true
-    desc = parent.ext.publish_desc
-    groupId = parent.ext.publish_groupId
-    licences = parent.ext.publish_licences
-    publishVersion = parent.ext.publish_version
-    website = parent.ext.publish_website
+    desc = parent.publish_desc
+    groupId = parent.publish_groupId
+    licences = parent.publish_licences
+    publishVersion = parent.publish_version
+    website = parent.publish_website
 }

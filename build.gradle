@@ -18,7 +18,7 @@ allprojects {
         publish_name = 'ktUPnP'
         publish_licences = ['Apache-2.0']
 
-        kotlin_version = '1.0.2'
+        kotlin_version = '1.0.5-2'
     }
 
     repositories {

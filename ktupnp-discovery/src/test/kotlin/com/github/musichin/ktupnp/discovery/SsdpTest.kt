@@ -1,12 +1,8 @@
 package com.github.musichin.ktupnp.discovery
 
 import org.junit.Test
-
 import rx.observers.TestSubscriber
 import java.util.concurrent.TimeUnit
-
-import org.fest.assertions.api.Assertions.assertThat
-import org.junit.Ignore
 
 class SsdpTest {
     companion object {
@@ -15,7 +11,7 @@ class SsdpTest {
 
     @Test
     fun listen() {
-        val subscriber = TestSubscriber<SsdpMessage>();
+        val subscriber = TestSubscriber<SsdpMessage>()
         Ssdp.notifications().subscribe(subscriber)
 
         subscriber.awaitTerminalEvent(5, TimeUnit.SECONDS)
@@ -24,7 +20,7 @@ class SsdpTest {
 
     @Test
     fun search() {
-        val subscriber = TestSubscriber<SsdpMessage>();
+        val subscriber = TestSubscriber<SsdpMessage>()
         Ssdp.search(ST_ROOTDEVICE).subscribe(subscriber)
 
         subscriber.awaitTerminalEvent(5, TimeUnit.SECONDS)
