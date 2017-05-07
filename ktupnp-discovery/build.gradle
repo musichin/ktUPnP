@@ -15,7 +15,6 @@ dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:$parent.kotlin_version"
     compile 'io.reactivex.rxjava2:rxjava:2.1.0'
 
-//    testCompile 'io.reactivex:rxkotlin:2.0.2'
     testCompile 'junit:junit:4.12'
 }
 
