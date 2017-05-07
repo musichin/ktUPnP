@@ -1,7 +1,6 @@
 package com.github.musichin.ktupnp.discovery
 
-import io.reactivex.*
-import io.reactivex.disposables.Disposable
+import rx.*
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.InetAddress
@@ -24,35 +23,35 @@ class Ssdp private constructor() {
          * Sends a search request and returns responding messages.
          * This method has no timeout and should be unsubscribed after a timeout.
          */
-        fun search(message: SsdpMessage): Flowable<SsdpMessage> {
+        fun search(message: SsdpMessage): Observable<SsdpMessage> {
             if (message.type != SsdpMessage.SEARCH_TYPE) {
                 throw IllegalArgumentException("Type ${message.type} is not supported for search.")
             }
 
-            return Flowable.create({ e ->
+            return Observable.create({ e ->
                 SearchSource(message).let {
-                    e.setDisposable(it)
+                    e.setSubscription(it)
                     it.start(e)
                 }
-            }, BackpressureStrategy.BUFFER)
+            }, Emitter.BackpressureMode.BUFFER)
         }
 
         /**
          * Listens for all notification messages.
          */
-        fun notifications(): Flowable<SsdpMessage> {
-            return Flowable.create({ e ->
+        fun notifications(): Observable<SsdpMessage> {
+            return Observable.create({ e ->
                 NotificationSource().let {
-                    e.setDisposable(it)
+                    e.setSubscription(it)
                     it.start(e)
                 }
-            }, BackpressureStrategy.BUFFER)
+            }, Emitter.BackpressureMode.BUFFER)
         }
 
         fun publish(replay: (SsdpMessage) -> SsdpMessage?): Completable {
-            return Completable.create { e ->
+            return Completable.fromEmitter { e ->
                 PublishSource(replay).let {
-                    e.setDisposable(it)
+                    e.setSubscription(it)
                     it.start(e)
                 }
             }
@@ -66,9 +65,9 @@ class Ssdp private constructor() {
         }
 
         fun notify(message: SsdpMessage, vararg messages: SsdpMessage): Completable {
-            return Completable.create { e ->
+            return Completable.fromEmitter { e ->
                 NotifySource(message, *messages).let {
-                    e.setDisposable(it)
+                    e.setSubscription(it)
                     it.start(e)
                 }
             }
@@ -84,8 +83,8 @@ class Ssdp private constructor() {
                 send(message, IPv6, PORT)
             }
 
-            dispose()
-            emitter.onComplete()
+            unsubscribe()
+            emitter.onCompleted()
         }
     }
 
@@ -149,23 +148,23 @@ class Ssdp private constructor() {
 
     private abstract class AbstractSource<in T>(
             val socket: MulticastSocket
-    ) : Disposable {
-        override fun isDisposed(): Boolean = socket.isClosed
+    ) : Subscription {
+        override fun isUnsubscribed(): Boolean = socket.isClosed
 
-        override fun dispose() {
-            if (!isDisposed) socket.close()
+        override fun unsubscribe() {
+            if (!isUnsubscribed) socket.close()
         }
 
         fun start(emitter: T) {
             try {
                 onStart(emitter)
             } catch (cause: IOException) {
-                if (!isDisposed) {
+                if (!isUnsubscribed) {
                     onError(emitter, cause)
                 }
             } finally {
                 try {
-                    dispose()
+                    unsubscribe()
                 } catch (ignore: Exception) {
                 }
             }

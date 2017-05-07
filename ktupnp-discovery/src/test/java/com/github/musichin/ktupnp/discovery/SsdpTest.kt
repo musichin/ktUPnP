@@ -1,10 +1,10 @@
 package com.github.musichin.ktupnp.discovery
 
-import io.reactivex.schedulers.Schedulers
-import io.reactivex.subscribers.TestSubscriber
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import rx.observers.TestSubscriber
+import rx.schedulers.Schedulers
 
 class SsdpTest {
     companion object {
@@ -31,20 +31,20 @@ class SsdpTest {
                 .unsubscribeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .toFlowable<Unit>()
+                .toObservable<Unit>()
                 .subscribe(notifySubscriber)
 
         Thread.sleep(1_000)
-        notifySubscriber.dispose()
-        notificationsSubscriber.dispose()
+        notifySubscriber.unsubscribe()
+        notificationsSubscriber.unsubscribe()
 
         notifySubscriber.assertNoErrors()
         notificationsSubscriber.assertNoErrors()
 
-        notifySubscriber.assertComplete()
-        notificationsSubscriber.assertNotComplete()
+        notifySubscriber.assertCompleted()
+        notificationsSubscriber.assertNotCompleted()
 
-        val values = notificationsSubscriber.values()
+        val values = notificationsSubscriber.onNextEvents
         assertTrue(values.isNotEmpty())
         values.forEach {
             assertEquals(it.st, message.st)
@@ -63,7 +63,7 @@ class SsdpTest {
                 .unsubscribeOn(Schedulers.io())
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .toFlowable<Unit>()
+                .toObservable<Unit>()
                 .subscribe(publishSubscriber)
 
         val searchSubscriber = TestSubscriber<SsdpMessage>()
@@ -74,16 +74,16 @@ class SsdpTest {
                 .subscribe(searchSubscriber)
 
         Thread.sleep(1_000)
-        publishSubscriber.dispose()
-        searchSubscriber.dispose()
+        publishSubscriber.unsubscribe()
+        searchSubscriber.unsubscribe()
 
         publishSubscriber.assertNoErrors()
         searchSubscriber.assertNoErrors()
 
-        publishSubscriber.assertNotComplete()
-        searchSubscriber.assertNotComplete()
+        publishSubscriber.assertNotCompleted()
+        searchSubscriber.assertNotCompleted()
 
-        val values = searchSubscriber.values()
+        val values = searchSubscriber.onNextEvents
         assertTrue(values.isNotEmpty())
         values.forEach {
             assertEquals(it.st, message.st)
