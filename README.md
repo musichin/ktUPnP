@@ -37,8 +37,8 @@ Ssdp.publish(message).subscribe()
 Send one shot `NOTIFY` message
 ```kotlin
 val message = SsdpMessage.Builder()
-  .type(SsdpMessage.NOTIFY_TYPE)
-  .st(ST_TEST)
+  .notify()
+  .st("upnp:rootdevice")
   .build()
 
 Ssdp.notify(message).subscribe()
