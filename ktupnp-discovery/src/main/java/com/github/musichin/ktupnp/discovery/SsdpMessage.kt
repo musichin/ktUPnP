@@ -2,7 +2,7 @@ package com.github.musichin.ktupnp.discovery;
 
 import java.util.*
 
-data class SsdpMessage private constructor(val type: String, val keyValues: Map<String, String>) {
+data class SsdpMessage(val type: String, val keyValues: Map<String, String>) {
     class Builder() {
         constructor(message: SsdpMessage) : this() {
             type = message.type
@@ -32,18 +32,26 @@ data class SsdpMessage private constructor(val type: String, val keyValues: Map<
 
         fun search() = type(SEARCH_TYPE)
 
-        fun st(st: String) = set(ST, st)
+        fun st(st: String?) = set(ST, st)
 
-        fun mx(mx: Any) = set(MX, mx)
+        fun mx(mx: Any?) = set(MX, mx)
 
-        fun man(man: String) = set(MAN, man)
+        fun host(host: Any?) = set(HOST, host)
 
-        fun cacheControl(man: String) = set(CACHE_CONTROL, man)
+        fun location(location: Any?) = set(LOCATION, location)
+
+        fun man(man: String?) = set(MAN, man)
+
+        fun cacheControl(man: String?) = set(CACHE_CONTROL, man)
 
         fun build() = SsdpMessage(type!!, keyValues)
 
-        fun set(key: String, value: Any): Builder {
-            keyValues.put(key, value.toString())
+        fun set(key: String, value: Any?): Builder {
+            if (value != null) {
+                keyValues.put(key, value.toString())
+            } else {
+                keyValues.remove(key)
+            }
             return this
         }
     }
@@ -54,6 +62,7 @@ data class SsdpMessage private constructor(val type: String, val keyValues: Map<
         const val SEARCH_TYPE = "M-SEARCH * ${HTTP}"
         const val NOTIFY_TYPE = "NOTIFY * ${HTTP}"
         const val ST = "ST"
+        const val HOST = "HOST"
         const val MX = "MX"
         const val MAN = "MAN"
         const val USN = "USN"
@@ -75,7 +84,7 @@ data class SsdpMessage private constructor(val type: String, val keyValues: Map<
             val str = String(bytes, offset, length)
             val strArray = str.split(LINE_BREAK)
 
-            if (strArray.size > 0) {
+            if (strArray.isNotEmpty()) {
                 builder.type = strArray[0]
 
                 var keyValue: String
@@ -87,7 +96,7 @@ data class SsdpMessage private constructor(val type: String, val keyValues: Map<
                     if (!keyValue.isEmpty()) {
                         keyValueArray = keyValue.split(COLON, limit = 2)
                         key = keyValueArray[0].trim()
-                        value = if (keyValueArray.size > 1) keyValueArray[1].trim() else ""
+                        value = keyValueArray.getOrElse(1) { "" }.trim()
                         builder.set(key, value)
                     }
                 }
@@ -102,6 +111,8 @@ data class SsdpMessage private constructor(val type: String, val keyValues: Map<
     val server = get(SERVER)
 
     val location = get(LOCATION)
+
+    val host = get(HOST)
 
     val usn = get(USN)
 
