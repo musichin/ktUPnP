@@ -3,28 +3,26 @@ apply plugin: 'com.novoda.bintray-release'
 
 buildscript {
     repositories {
-        mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$parent.kotlin_version"
+        classpath 'com.novoda:bintray-release:0.8.0'
     }
 }
 
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$parent.kotlin_version"
-    compile 'io.reactivex.rxjava2:rxjava:2.1.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     testCompile 'junit:junit:4.12'
 }
 
 publish {
-    artifactId = project.name
-    uploadName = parent.publish_name
-    autoPublish = true
-    desc = parent.publish_desc
-    groupId = parent.publish_groupId
-    licences = parent.publish_licences
-    publishVersion = parent.publish_version
-    website = parent.publish_website
+    publishVersion = rootProject.version
+    groupId = rootProject.group
+    desc = rootProject.description
+    artifactId = name
+    uploadName = rootProject.name
+    website = rootProject.website
+    licences = rootProject.licences
 }

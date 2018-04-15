@@ -1,47 +1,34 @@
-# ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.1.2-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/ktUPnP/images/download.svg) ](https://bintray.com/musichin/maven/ktUPnP/_latestVersion)
+# ktUPnP [![Kotlin](https://img.shields.io/badge/Kotlin-1.2.31-blue.svg)](http://kotlinlang.org) [![Build Status](https://travis-ci.org/musichin/ktUPnP.svg?branch=master)](https://travis-ci.org/musichin/ktUPnP) [![jcenter](https://api.bintray.com/packages/musichin/maven/ktUPnP/images/download.svg) ](https://bintray.com/musichin/maven/ktUPnP/_latestVersion)
 
 ## Discovery
+
+### Message
+```kotlin
+TODO
+```
 
 ### Search
 Send a `M-SEARCH` message and receive `OK` responses
 ```kotlin
-Ssdp.search("upnp:rootdevice").subscribe {
-  println(it.location)
-  // "http://192.168.0.1:9561/description.xml"
-  println(it.server)
-  // "Linux/2.6.32.5"
-}
+TODO
 ```
 
 ### Notifications
 Listen for `NOTIFY` messages
 ```kotlin
-Ssdp.notifications().filter { it.st == "upnp:rootdevice" }.subscribe {
-  println(it.nt)
-  // "urn:schemas-upnp-org:device:InternetGatewayDevice:1"
-}
+TODO
 ```
 
 ### Publish
 Response to all matching `M-SEARCH` messages
 ```kotlin
-val message = SsdpMessage.Builder()
-  .ok()
-  .st("upnp:rootdevice")
-  .build()
-
-Ssdp.publish(message).subscribe()
+TODO
 ```
 
 ### Notify
 Send one shot `NOTIFY` message
 ```kotlin
-val message = SsdpMessage.Builder()
-  .notify()
-  .st("upnp:rootdevice")
-  .build()
-
-Ssdp.notify(message).subscribe()
+TODO
 ```
 
 ### Binaries
